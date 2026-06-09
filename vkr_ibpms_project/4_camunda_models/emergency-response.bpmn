@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1h06dkp" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.46.1" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.9.0">
+  <bpmn:process id="emergency-response" isExecutable="true">
+    <bpmn:startEvent id="Event_0l7seje" name="Утечка газа">
+      <bpmn:outgoing>Flow_1te1w5z</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1051wex" messageRef="Message_22gc2cm" />
+    </bpmn:startEvent>
+    <bpmn:parallelGateway id="Gateway_0ty8b92">
+      <bpmn:incoming>Flow_1te1w5z</bpmn:incoming>
+      <bpmn:outgoing>Flow_1bgrsvp</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0n41mse</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:sequenceFlow id="Flow_1te1w5z" sourceRef="Event_0l7seje" targetRef="Gateway_0ty8b92" />
+    <bpmn:serviceTask id="Activity_1vc5964" name="Перекрыть газовые вентили">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="shut-down-valves" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1bgrsvp</bpmn:incoming>
+      <bpmn:outgoing>Flow_0klqtpm</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Activity_113kicn" name="Перекличка">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0n41mse</bpmn:incoming>
+      <bpmn:outgoing>Flow_1t4r9r2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1bgrsvp" sourceRef="Gateway_0ty8b92" targetRef="Activity_1vc5964" />
+    <bpmn:sequenceFlow id="Flow_0n41mse" sourceRef="Gateway_0ty8b92" targetRef="Activity_113kicn" />
+    <bpmn:endEvent id="Event_0e6jnzt" name="Вентили закрыты">
+      <bpmn:incoming>Flow_0klqtpm</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0klqtpm" sourceRef="Activity_1vc5964" targetRef="Event_0e6jnzt" />
+    <bpmn:boundaryEvent id="Event_035qjis" name="Эвакуация" attachedToRef="Activity_113kicn">
+      <bpmn:outgoing>Flow_0zx2pp4</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_0bqj8hj">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT30S</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:endEvent id="Event_1or5ot4" name="Все спасены">
+      <bpmn:incoming>Flow_1t4r9r2</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1t4r9r2" sourceRef="Activity_113kicn" targetRef="Event_1or5ot4" />
+    <bpmn:serviceTask id="Activity_0uynfkr" name="Автоматический вызов МЧС">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="call-rescue-team" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0zx2pp4</bpmn:incoming>
+      <bpmn:outgoing>Flow_1f824fv</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0zx2pp4" sourceRef="Event_035qjis" targetRef="Activity_0uynfkr" />
+    <bpmn:endEvent id="Event_1wkn34b" name="Тревога">
+      <bpmn:incoming>Flow_1f824fv</bpmn:incoming>
+      <bpmn:terminateEventDefinition id="TerminateEventDefinition_0e5zyg7" />
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1f824fv" sourceRef="Activity_0uynfkr" targetRef="Event_1wkn34b" />
+  </bpmn:process>
+  <bpmn:message id="Message_22gc2cm" name="emergency.gas.leak" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="emergency-response">
+      <bpmndi:BPMNShape id="Event_0l7seje_di" bpmnElement="Event_0l7seje">
+        <dc:Bounds x="162" y="82" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="151" y="125" width="58" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0ty8b92_di" bpmnElement="Gateway_0ty8b92">
+        <dc:Bounds x="245" y="75" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1vc5964_di" bpmnElement="Activity_1vc5964">
+        <dc:Bounds x="340" y="60" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_113kicn_di" bpmnElement="Activity_113kicn">
+        <dc:Bounds x="220" y="170" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0e6jnzt_di" bpmnElement="Event_0e6jnzt">
+        <dc:Bounds x="492" y="82" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="465" y="125" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1or5ot4_di" bpmnElement="Event_1or5ot4">
+        <dc:Bounds x="372" y="192" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="357" y="235" width="66" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0uynfkr_di" bpmnElement="Activity_0uynfkr">
+        <dc:Bounds x="220" y="310" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_00wrmv7_di" bpmnElement="Event_1wkn34b">
+        <dc:Bounds x="362" y="332" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="360" y="375" width="40" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_035qjis_di" bpmnElement="Event_035qjis">
+        <dc:Bounds x="252" y="232" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="243" y="275" width="55" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1te1w5z_di" bpmnElement="Flow_1te1w5z">
+        <di:waypoint x="198" y="100" />
+        <di:waypoint x="245" y="100" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1bgrsvp_di" bpmnElement="Flow_1bgrsvp">
+        <di:waypoint x="295" y="100" />
+        <di:waypoint x="340" y="100" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0n41mse_di" bpmnElement="Flow_0n41mse">
+        <di:waypoint x="270" y="125" />
+        <di:waypoint x="270" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0klqtpm_di" bpmnElement="Flow_0klqtpm">
+        <di:waypoint x="440" y="100" />
+        <di:waypoint x="492" y="100" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1t4r9r2_di" bpmnElement="Flow_1t4r9r2">
+        <di:waypoint x="320" y="210" />
+        <di:waypoint x="372" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0zx2pp4_di" bpmnElement="Flow_0zx2pp4">
+        <di:waypoint x="270" y="268" />
+        <di:waypoint x="270" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1f824fv_di" bpmnElement="Flow_1f824fv">
+        <di:waypoint x="320" y="350" />
+        <di:waypoint x="362" y="350" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

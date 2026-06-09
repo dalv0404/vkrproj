@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1wqm92n" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.46.1" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.9.0">
+  <bpmn:process id="production-assembly" name="Сборка изделия" isExecutable="true">
+    <bpmn:startEvent id="Event_1uofmz7" name="Заказ на производство">
+      <bpmn:outgoing>Flow_0piwgay</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1jy8e9o" messageRef="Message_2t88c9g" />
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Activity_1h20yob" name="Сборка базового модуля">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="assemble-product" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0piwgay</bpmn:incoming>
+      <bpmn:outgoing>Flow_1iigcrp</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0piwgay" sourceRef="Event_1uofmz7" targetRef="Activity_1h20yob" />
+    <bpmn:serviceTask id="Activity_101z3fg" name="Калибровочный тест">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="calibration-test" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1iigcrp</bpmn:incoming>
+      <bpmn:outgoing>Flow_15eqxvb</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1iigcrp" sourceRef="Activity_1h20yob" targetRef="Activity_101z3fg" />
+    <bpmn:boundaryEvent id="Event_07rgs6e" attachedToRef="Activity_101z3fg">
+      <bpmn:outgoing>Flow_01ic710</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_1v3pgeu" errorRef="Error_07jdzrd" />
+    </bpmn:boundaryEvent>
+    <bpmn:userTask id="Activity_0oxmt2q" name="Упаковка изделия">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_15eqxvb</bpmn:incoming>
+      <bpmn:outgoing>Flow_0ulb8sv</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_15eqxvb" sourceRef="Activity_101z3fg" targetRef="Activity_0oxmt2q" />
+    <bpmn:endEvent id="Event_136cmfj" name="Заказ выполнен">
+      <bpmn:incoming>Flow_0ulb8sv</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0ulb8sv" sourceRef="Activity_0oxmt2q" targetRef="Event_136cmfj" />
+    <bpmn:serviceTask id="Activity_1tcuwoz" name="Разборка и утилизация брака">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="scrap-product" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_01ic710</bpmn:incoming>
+      <bpmn:outgoing>Flow_0i2lyd8</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_01ic710" sourceRef="Event_07rgs6e" targetRef="Activity_1tcuwoz" />
+    <bpmn:endEvent id="Event_1faoiji" name="Изделие забраковано">
+      <bpmn:incoming>Flow_0i2lyd8</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0i2lyd8" sourceRef="Activity_1tcuwoz" targetRef="Event_1faoiji" />
+  </bpmn:process>
+  <bpmn:message id="Message_2t88c9g" name="production.order.received" />
+  <bpmn:error id="Error_07jdzrd" name="Calibration Failed" errorCode="CALIBRATION_FAILED" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="production-assembly">
+      <bpmndi:BPMNShape id="Event_1uofmz7_di" bpmnElement="Event_1uofmz7">
+        <dc:Bounds x="172" y="112" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="155" y="155" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1h20yob_di" bpmnElement="Activity_1h20yob">
+        <dc:Bounds x="250" y="90" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_101z3fg_di" bpmnElement="Activity_101z3fg">
+        <dc:Bounds x="400" y="90" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0oxmt2q_di" bpmnElement="Activity_0oxmt2q">
+        <dc:Bounds x="560" y="90" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_136cmfj_di" bpmnElement="Event_136cmfj">
+        <dc:Bounds x="712" y="112" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="689" y="155" width="83" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1tcuwoz_di" bpmnElement="Activity_1tcuwoz">
+        <dc:Bounds x="400" y="220" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1faoiji_di" bpmnElement="Event_1faoiji">
+        <dc:Bounds x="562" y="242" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="548" y="285" width="65" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_07rgs6e_di" bpmnElement="Event_07rgs6e">
+        <dc:Bounds x="432" y="152" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0piwgay_di" bpmnElement="Flow_0piwgay">
+        <di:waypoint x="208" y="130" />
+        <di:waypoint x="250" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1iigcrp_di" bpmnElement="Flow_1iigcrp">
+        <di:waypoint x="350" y="130" />
+        <di:waypoint x="400" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15eqxvb_di" bpmnElement="Flow_15eqxvb">
+        <di:waypoint x="500" y="130" />
+        <di:waypoint x="560" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ulb8sv_di" bpmnElement="Flow_0ulb8sv">
+        <di:waypoint x="660" y="130" />
+        <di:waypoint x="712" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01ic710_di" bpmnElement="Flow_01ic710">
+        <di:waypoint x="450" y="188" />
+        <di:waypoint x="450" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0i2lyd8_di" bpmnElement="Flow_0i2lyd8">
+        <di:waypoint x="500" y="260" />
+        <di:waypoint x="562" y="260" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="499" y="242" width="65" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

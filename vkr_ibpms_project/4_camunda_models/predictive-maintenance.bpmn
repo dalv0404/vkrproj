@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_02n2m7s" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.46.1" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.9.0">
+  <bpmn:process id="predictive-maintenance" name="Перегрев" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Аномалия датчика">
+      <bpmn:outgoing>Flow_15p59vr</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_05hk4yb" messageRef="Message_1ubh15v" />
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Activity_0dsoatw" name="Диагностика системы">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="analyze-telemetry" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_15p59vr</bpmn:incoming>
+      <bpmn:outgoing>Flow_1v8q1ip</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_15p59vr" sourceRef="StartEvent_1" targetRef="Activity_0dsoatw" />
+    <bpmn:exclusiveGateway id="Gateway_1if5ism" name="Тип проблемы?">
+      <bpmn:incoming>Flow_1v8q1ip</bpmn:incoming>
+      <bpmn:outgoing>Flow_1t95po7</bpmn:outgoing>
+      <bpmn:outgoing>Flow_03oernw</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_1v8q1ip" sourceRef="Activity_0dsoatw" targetRef="Gateway_1if5ism" />
+    <bpmn:serviceTask id="Activity_0wz8ri4" name="Снизить обороты шпинделя на 20%">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="reduce-speed" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1t95po7</bpmn:incoming>
+      <bpmn:outgoing>Flow_0pu75ek</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Activity_1c10srp" name="Осмотр станка техником">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_03oernw</bpmn:incoming>
+      <bpmn:outgoing>Flow_0dz5d6p</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1t95po7" name="Перегрев" sourceRef="Gateway_1if5ism" targetRef="Activity_0wz8ri4">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=anomalyType = "overheating"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_03oernw" name="Износ" sourceRef="Gateway_1if5ism" targetRef="Activity_1c10srp">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=anomalyType = "mechanical_wear"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:endEvent id="Event_0fm5417" name="Решено автоматически">
+      <bpmn:incoming>Flow_0pu75ek</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0pu75ek" sourceRef="Activity_0wz8ri4" targetRef="Event_0fm5417" />
+    <bpmn:exclusiveGateway id="Gateway_116c4cp" name="Требуется ремонт?">
+      <bpmn:incoming>Flow_0dz5d6p</bpmn:incoming>
+      <bpmn:outgoing>Flow_1dgdjm7</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0paqnd3</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_0dz5d6p" sourceRef="Activity_1c10srp" targetRef="Gateway_116c4cp" />
+    <bpmn:endEvent id="Event_0xg2h5s" name="Ложная тревога">
+      <bpmn:incoming>Flow_1dgdjm7</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1dgdjm7" name="Нет" sourceRef="Gateway_116c4cp" targetRef="Event_0xg2h5s">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=repairNeeded = false</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:serviceTask id="Activity_0lgml4h" name="Заказ запчастей со склада">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="order-parts" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0paqnd3</bpmn:incoming>
+      <bpmn:outgoing>Flow_16hrpx4</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0paqnd3" name="Да" sourceRef="Gateway_116c4cp" targetRef="Activity_0lgml4h">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=repairNeeded = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:endEvent id="Event_0hnfvp5" name="Станок на ремонте">
+      <bpmn:incoming>Flow_16hrpx4</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_16hrpx4" sourceRef="Activity_0lgml4h" targetRef="Event_0hnfvp5" />
+  </bpmn:process>
+  <bpmn:message id="Message_1ubh15v" name="sensor.anomaly.detected" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="predictive-maintenance">
+      <bpmndi:BPMNShape id="Event_0ixl614_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="182" y="82" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="175" y="125" width="51" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0dsoatw_di" bpmnElement="Activity_0dsoatw">
+        <dc:Bounds x="270" y="60" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1if5ism_di" bpmnElement="Gateway_1if5ism" isMarkerVisible="true">
+        <dc:Bounds x="425" y="75" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="410" y="51" width="79" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0wz8ri4_di" bpmnElement="Activity_0wz8ri4">
+        <dc:Bounds x="530" y="60" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1c10srp_di" bpmnElement="Activity_1c10srp">
+        <dc:Bounds x="400" y="180" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0fm5417_di" bpmnElement="Event_0fm5417">
+        <dc:Bounds x="682" y="82" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="662" y="125" width="76" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_116c4cp_di" bpmnElement="Gateway_116c4cp" isMarkerVisible="true">
+        <dc:Bounds x="555" y="195" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="554" y="157.5" width="51" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0xg2h5s_di" bpmnElement="Event_0xg2h5s">
+        <dc:Bounds x="562" y="292" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="540" y="335" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0lgml4h_di" bpmnElement="Activity_0lgml4h">
+        <dc:Bounds x="640" y="180" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0hnfvp5_di" bpmnElement="Event_0hnfvp5">
+        <dc:Bounds x="782" y="202" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="774" y="245" width="52" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_15p59vr_di" bpmnElement="Flow_15p59vr">
+        <di:waypoint x="218" y="100" />
+        <di:waypoint x="270" y="100" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="213" y="82" width="63" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1v8q1ip_di" bpmnElement="Flow_1v8q1ip">
+        <di:waypoint x="370" y="100" />
+        <di:waypoint x="425" y="100" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1t95po7_di" bpmnElement="Flow_1t95po7">
+        <di:waypoint x="475" y="100" />
+        <di:waypoint x="530" y="100" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="479" y="82" width="49" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03oernw_di" bpmnElement="Flow_03oernw">
+        <di:waypoint x="450" y="125" />
+        <di:waypoint x="450" y="180" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="449" y="150" width="32" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0pu75ek_di" bpmnElement="Flow_0pu75ek">
+        <di:waypoint x="630" y="100" />
+        <di:waypoint x="682" y="100" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0dz5d6p_di" bpmnElement="Flow_0dz5d6p">
+        <di:waypoint x="500" y="220" />
+        <di:waypoint x="555" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1dgdjm7_di" bpmnElement="Flow_1dgdjm7">
+        <di:waypoint x="580" y="245" />
+        <di:waypoint x="580" y="292" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="585" y="266" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0paqnd3_di" bpmnElement="Flow_0paqnd3">
+        <di:waypoint x="605" y="220" />
+        <di:waypoint x="640" y="220" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="616" y="202" width="13" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16hrpx4_di" bpmnElement="Flow_16hrpx4">
+        <di:waypoint x="740" y="220" />
+        <di:waypoint x="782" y="220" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

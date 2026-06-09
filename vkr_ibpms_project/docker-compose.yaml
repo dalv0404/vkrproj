@@ -1,0 +1,57 @@
+networks:
+  camunda-platform:
+    driver: bridge
+
+services:
+  postgresdwh:
+    image: postgres:16
+    container_name: postgres_dwh
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=dwhbpmn
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - camunda-platform
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  camunda:
+    image: camunda/camunda:8.9.5
+    container_name: camunda_local
+    ports:
+      - "8080:8080"
+      - "26500:26500"
+      - "9600:9600"
+    environment:
+      - CAMUNDA_DATA_SECONDARY_STORAGE_TYPE=rdbms
+      - CAMUNDA_DATA_SECONDARY_STORAGE_RDBMS_URL=jdbc:postgresql://postgresdwh:5432/dwhbpmn
+      - CAMUNDA_DATA_SECONDARY_STORAGE_RDBMS_USERNAME=postgres
+      - CAMUNDA_DATA_SECONDARY_STORAGE_RDBMS_PASSWORD=postgres
+      - CAMUNDA_SECURITY_AUTHENTICATION_UNPROTECTEDAPI=true
+      - CAMUNDA_SECURITY_AUTHORIZATIONS_ENABLED=false
+      - CAMUNDA_SECURITY_INITIALIZATION_USERS_0_USERNAME=admin
+      - CAMUNDA_SECURITY_INITIALIZATION_USERS_0_PASSWORD=admin
+      - CAMUNDA_SECURITY_INITIALIZATION_USERS_0_NAME=Admin User
+      - CAMUNDA_SECURITY_INITIALIZATION_USERS_0_EMAIL=admin@example.com
+      - CAMUNDA_SECURITY_INITIALIZATION_DEFAULTROLES_ADMIN_USERS_0=admin
+    networks:
+      - camunda-platform
+    depends_on:
+      postgresdwh:
+        condition: service_healthy
+        
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase_bi
+    ports:
+      - "3000:3000"
+    networks:
+      - camunda-platform
+    depends_on:
+      postgresdwh:
+        condition: service_healthy
